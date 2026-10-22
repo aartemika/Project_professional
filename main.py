@@ -87,5 +87,4 @@ plt.ylabel('Признак', fontsize=12)
 plt.tight_layout()
 
 # Сохраняем график в папку с проектом
-
 plt.show()
