@@ -87,6 +87,5 @@ plt.ylabel('Признак', fontsize=12)
 plt.tight_layout()
 
 # Сохраняем график в папку с проектом
-plt.savefig('feature_importance.png', dpi=150)
-print("График успешно сохранен как 'feature_importance.png'")
+
 plt.show()
