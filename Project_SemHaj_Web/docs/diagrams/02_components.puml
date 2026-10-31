@@ -1,0 +1,29 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam shadowing false
+skinparam backgroundColor white
+top to bottom direction
+component "Оконное приложение\nPySide6 и requests" as Qt
+component "Браузер" as B
+package "Веб-приложение Flask" {
+component "Блупринты\nстраницы и авторизация\nAPI и административный CRUD" as Web
+component "Сервисы\nимпорт, метрики, k-means\nпроверки CRUD" as S
+component "Модели SQLAlchemy" as ORM
+component "Шаблоны Jinja2\nлокальные CSS и Bootstrap" as T
+Web --> S
+Web --> T
+S --> ORM
+}
+database "SQLite\nвакансии и справочники" as DB
+component "pandas и matplotlib\nсвоя копия в каждом приложении" as Common
+file "CSV вакансий" as CSV
+component "Оконное приложение\nконсольный анализатор" as CLI
+Qt --> Web : HTTP / JSON
+B --> Web : HTTP / HTML
+ORM --> DB
+S --> Common
+CLI --> Common
+Common --> CSV
+
+@enduml

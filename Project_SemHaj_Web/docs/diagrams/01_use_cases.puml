@@ -1,0 +1,32 @@
+@startuml
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam backgroundColor white
+left to right direction
+actor "Аналитик" as A
+actor "Администратор" as B
+B --|> A
+rectangle "Экономико-кадровый навигатор" {
+usecase "Войти в систему" as U1
+usecase "Выбрать область и города" as U2
+usecase "Посмотреть метрики и графики" as U3
+usecase "Сравнить два или три города" as U4
+usecase "Посмотреть кластеры" as U5
+usecase "Сохранить отчёт или график" as U6
+usecase "Открыть справку" as U7
+usecase "Импортировать CSV" as U8
+usecase "Управлять пользователями" as U9
+usecase "CRUD всех таблиц" as U10
+}
+A --> U1
+A --> U2
+A --> U3
+A --> U4
+A --> U5
+A --> U6
+A --> U7
+B --> U8
+B --> U9
+B --> U10
+@enduml

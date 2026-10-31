@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0"><class>HelpDialog</class><widget class="QDialog" name="HelpDialog"><property name="windowTitle"><string>Справка</string></property><property name="geometry"><rect><x>0</x><y>0</y><width>850</width><height>700</height></rect></property><layout class="QVBoxLayout" name="layout"><item><widget class="QTextBrowser" name="helpBrowser"/></item></layout></widget><resources/><connections/></ui>

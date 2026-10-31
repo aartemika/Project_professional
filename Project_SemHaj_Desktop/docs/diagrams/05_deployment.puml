@@ -1,0 +1,28 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam shadowing false
+skinparam backgroundColor white
+top to bottom direction
+node "Компьютер пользователя" {
+artifact "Оконное приложение\nPySide6 и requests" as Qt
+artifact "Браузер" as B
+}
+node "Локальный сервер — веб-приложение" {
+artifact "Flask\nmain.py и блупринты" as F
+artifact "Локальные шаблоны,\nCSS и Bootstrap" as T
+database "SQLite\ndata/navigator.db" as DB
+file "Настройки .env" as Env
+F --> T
+F --> DB : SQLAlchemy
+DB -[hidden]-> Env
+}
+file "CSV в папке data\nвеб-приложения" as CSV
+Qt --> F : HTTP / JSON
+B --> F : HTTP / HTML, PNG, PDF
+F --> CSV : импорт
+note bottom of CSV
+Адрес учебного сервера
+http://127.0.0.1:5000
+end note
+@enduml

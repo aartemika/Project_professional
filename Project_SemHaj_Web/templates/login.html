@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}<div class="login"><p class="eyebrow">ДОСТУП К АНАЛИТИКЕ</p><h1>Вход в навигатор</h1><p>Веб-платформа и оконный клиент используют одну учётную запись.</p>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Логин<input class="form-control" name="username" required maxlength="40" autocomplete="username"></label>
+<label>Пароль<input class="form-control" type="password" name="password" required autocomplete="current-password"></label>
+<button class="btn btn-primary">Войти</button></form></div>{% endblock %}

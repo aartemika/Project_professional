@@ -1,0 +1,28 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 17
+skinparam shadowing false
+skinparam backgroundColor white
+start
+:Выбрать CSV
+проверить права и CSRF;
+:Прочитать и очистить pandas
+проверить поля и дубли ID;
+if (Набор пуст или некорректен?) then (да)
+  :Отказать в импорте
+сохранить прежнюю БД;
+  stop
+else (нет)
+endif
+:Начать транзакцию;
+:Заменить справочники
+и вакансии, добавить журнал;
+if (Запись успешна?) then (да)
+  :Зафиксировать транзакцию;
+else (нет)
+  :Откатить транзакцию
+сохранить прежний набор;
+endif
+:Показать результат;
+stop
+@enduml

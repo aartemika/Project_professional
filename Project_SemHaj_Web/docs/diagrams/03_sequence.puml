@@ -1,0 +1,27 @@
+@startuml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam shadowing false
+skinparam backgroundColor white
+participant "Клиент Qt\nформа и Worker" as Q
+participant "Flask API" as F
+database "SQLite" as D
+Q -> F : POST /api/login\nлогин и пароль
+F -> D : Найти пользователя
+D --> F : Запись и хеш пароля
+F -> F : Проверить пароль
+alt Успех
+F --> Q : Токен на один час
+Q -> F : GET /api/summary\nобласть, города, Bearer токен
+F -> F : Проверить токен\nи активность пользователя
+F -> D : Получить вакансии\nвыбранной области
+D --> F : Строки со справочниками
+F -> F : Сервис метрик:\nагрегация, индекс, k-means
+F --> Q : JSON с метриками\nи рекомендацией
+Q -> Q : Сигнал в поток интерфейса\nтаблица и matplotlib
+else Ошибка
+F --> Q : HTTP 401
+Q -> Q : Сообщение о повторном входе
+end
+
+@enduml
