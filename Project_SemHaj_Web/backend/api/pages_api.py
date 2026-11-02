@@ -7,7 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from ..charts import make_chart, COORDINATES
 from .auth_api import login_required
-from ..services import summary, references, recommendation, frame
+from ..services import summary, references, recommendation, frame, map_metrics
 from ..database.models import db, ImportLog
 
 bp = Blueprint("pages", __name__)
@@ -24,12 +24,11 @@ def selection() -> tuple[str, list[str]]:
         abort(400, description="Неизвестный город")
     return category, cities
 
-def map_points(rows: list[dict], cities: list[str]) -> list[dict]:
+def map_points(rows: list[dict], cities: list[str], category: str) -> list[dict]:
     """Подготовить для карты все города с координатами, включая города без вакансий."""
-    known = {r["city"]: r for r in rows}
-    return [{"city": city, "lon": COORDINATES[city][0], "lat": COORDINATES[city][1],
-             "count": known[city]["count"] if city in known else 0,
-             "indicator": known[city]["indicator"] if city in known else 0}
+    metrics = map_metrics(rows, category)
+    empty = {"count": 0, "share": 0, "coefficient": 0 if category else None}
+    return [{"city": city, "lon": COORDINATES[city][0], "lat": COORDINATES[city][1], **metrics.get(city, empty)}
             for city in cities if city in COORDINATES]
 
 @bp.get("/")
@@ -45,7 +44,7 @@ def index() -> str:
     compare_error = "Для сравнения выберите от двух до трёх городов." if request.args.get("compare") and not 2 <= len(cities) <= 3 else ""
     refs = references()
     return render_template("index.html", rows=rows, refs=refs, category=category, cities=cities,
-        points=map_points(all_rows, refs["cities"]), recommendation=recommendation(rows), cluster=cluster, compare_error=compare_error,
+        points=map_points(all_rows, refs["cities"], category), recommendation=recommendation(rows), cluster=cluster, compare_error=compare_error,
         source=db.session.scalar(db.select(ImportLog).order_by(ImportLog.id.desc()).limit(1)))
 
 @bp.get("/chart.png")

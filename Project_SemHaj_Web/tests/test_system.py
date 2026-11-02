@@ -11,6 +11,7 @@ from main import create_app
 from backend.database.models import db, User, Vacancy
 from backend.services import import_dataset, summary
 from backend.dataset import load_dataset
+from backend.charts import make_chart
 
 @pytest.fixture
 def app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Flask]:
@@ -83,6 +84,25 @@ def test_web_and_exports(app: Flask) -> None:
     assert client.get("/missing").status_code == 404
     assert client.get("/api/missing").is_json
 
+def test_chart_styling() -> None:
+    """Проверить порядок городов, выделение лидера, среднее и запись значений."""
+    rows = [{"city": "А", "count": 10, "salary": 100000, "responses": 2.5, "remote": 1.25, "indicator": 50},
+            {"city": "Б", "count": 30, "salary": None, "responses": 3.0, "remote": 0, "indicator": 100},
+            {"city": "В", "count": 20, "salary": 90000, "responses": 1.0, "remote": 4.0, "indicator": 66}]
+    ax = make_chart(rows, "vacancies").axes[0]
+    assert [label.get_text() for label in ax.get_yticklabels()] == ["А", "В", "Б"]
+    texts = [text.get_text() for text in ax.texts]
+    assert "среднее по городам 20" in texts and "30" in texts
+    leader = next(text for text in ax.texts if text.get_text() == "30")
+    assert leader.get_fontweight() == "bold"
+    salary = make_chart(rows, "salary").axes[0]
+    assert [label.get_text() for label in salary.get_yticklabels()] == ["В", "А"]
+    assert "100 000" in [text.get_text() for text in salary.texts]
+    assert "1,2%" in [text.get_text() for text in make_chart(rows, "remote").axes[0].texts]
+    single = make_chart(rows[:1], "vacancies").axes[0]
+    assert not any("среднее" in text.get_text() for text in single.texts)
+    assert make_chart([{**rows[0], "salary": None}], "salary").axes[0].texts[0].get_text() == "Значения отсутствуют"
+
 def test_main_opens_browser_once(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture) -> None:
     """Проверить открытие браузера и отказ запускать второй сервер."""
     import main as entry
@@ -117,10 +137,18 @@ def test_city_map(app: Flask) -> None:
         """Получить точки карты со страницы аналитики."""
         page = client.get("/?" + query).text
         return {p["city"]: p for p in json.loads(re.search(r'id="map-data" type="application/json">(.*?)</script>', page, re.S).group(1))}
+    plain = points("")
+    assert plain["Москва"]["share"] == 50 and plain["Казань"]["share"] == 50
+    assert plain["Москва"]["coefficient"] is None
+    assert points("city=Казань")["Москва"]["coefficient"] is None
     selected = points("category=IT&city=Казань")
-    assert selected["Москва"]["count"] == 2 and selected["Москва"]["indicator"] == 100
-    assert selected["Казань"]["count"] == 1 and selected["Казань"]["indicator"] == 50
-    assert points("category=Медицина")["Москва"]["count"] == 0
+    assert selected["Москва"]["count"] == 2 and selected["Москва"]["share"] == 100
+    assert selected["Москва"]["coefficient"] == 1.33 and selected["Казань"]["coefficient"] == 0.67
+    medicine = points("category=Медицина")
+    assert medicine["Казань"]["coefficient"] == 2
+    assert medicine["Москва"]["count"] == 0 and medicine["Москва"]["coefficient"] == 0
+    assert 'data-mode="share"' in client.get("/").text
+    assert 'data-mode="specialization"' in client.get("/?category=IT").text
     for path in ["vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/city_map.js", "data/russia.geojson"]:
         assert client.get("/static/" + path).status_code == 200, path
     page = client.get("/").text

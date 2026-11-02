@@ -98,6 +98,27 @@ def recommendation(rows: list[dict]) -> str:
         text += f"Наименьшая медиана предлагаемой зарплаты: {low['city']} ({low['salary']:,.0f} руб./месяц). "
     return text + "Для выбора площадки дополнительно нужны данные о резюме, стоимости жизни и инфраструктуре."
 
+def city_totals() -> dict[str, int]:
+    """Посчитать все вакансии каждого города независимо от фильтров."""
+    query = db.select(City.name, db.func.count(Vacancy.id)).join(Vacancy, Vacancy.city_id == City.id).group_by(City.name)
+    return {name: count for name, count in db.session.execute(query)}
+
+def map_metrics(rows: list[dict], category: str = "") -> dict[str, dict]:
+    """Рассчитать для карты долю вакансий и, при выбранной области, коэффициент специализации."""
+    totals = city_totals()
+    total = sum(totals.values())
+    selected = sum(r["count"] for r in rows)
+    counts = {r["city"]: r["count"] for r in rows}
+    result = {}
+    for city, city_total in totals.items():
+        count = counts.get(city, 0)
+        if category:
+            result[city] = {"count": count, "share": round(100 * count / city_total, 2),
+                "coefficient": round(count / city_total / (selected / total), 2) if selected else 0}
+        else:
+            result[city] = {"count": count, "share": round(100 * count / total, 2), "coefficient": None}
+    return result
+
 def references() -> dict:
     """Получить актуальные значения справочников."""
     return {name: list(db.session.scalars(db.select(model.name).order_by(model.name)))
