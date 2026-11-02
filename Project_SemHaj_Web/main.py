@@ -21,7 +21,8 @@ def create_app(config: dict | None = None) -> Flask:
         SQLALCHEMY_DATABASE_URI="sqlite:///" + (APP_ROOT / "data/navigator.db").as_posix(),
         SQLALCHEMY_TRACK_MODIFICATIONS=False, MAX_CONTENT_LENGTH=1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax",
-        DATASET_DIR=str(APP_ROOT / "data"), AUTO_LOGIN=os.getenv("AUTO_LOGIN", "0") == "1")
+        DATASET_DIR=str(APP_ROOT / "data"), AUTO_LOGIN=os.getenv("AUTO_LOGIN", "0") == "1",
+        BOOT_ID=secrets.token_hex(8))
     if config:
         app.config.update(config)
     db.init_app(app)

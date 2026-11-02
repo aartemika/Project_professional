@@ -9,6 +9,9 @@ bp = Blueprint("auth", __name__)
 
 def current_user() -> User | None:
     """Найти активного пользователя браузерной сессии."""
+    if session.get("boot") != current_app.config["BOOT_ID"]:
+        session.clear()
+        session["boot"] = current_app.config["BOOT_ID"]
     user = db.session.get(User, session.get("user_id")) if session.get("user_id") else None
     return user if user and user.active else None
 
@@ -42,6 +45,7 @@ def admin_required(view: Callable) -> Callable:
 @bp.route("/login", methods=["GET", "POST"])
 def login() -> Any:
     """Показать приветствие или форму входа и открыть браузерную сессию."""
+    current_user()
     if request.method == "GET" and auto_login_user() and not session.get("manual_login"):
         return redirect(url_for("pages.index")) if current_user() else render_template("welcome.html")
     error = ""
@@ -49,6 +53,7 @@ def login() -> Any:
         user = db.session.scalar(db.select(User).where(User.username == request.form.get("username", "")))
         if user and user.active and check_password_hash(user.password_hash, request.form.get("password", "")):
             session.clear()
+            session["boot"] = current_app.config["BOOT_ID"]
             session["user_id"] = user.id
             return redirect(url_for("pages.index"))
         error = "Неверный логин или пароль"
@@ -67,5 +72,6 @@ def enter() -> Any:
 def logout() -> Any:
     """Закрыть браузерную сессию и не входить снова автоматически."""
     session.clear()
+    session["boot"] = current_app.config["BOOT_ID"]
     session["manual_login"] = True
     return redirect(url_for("auth.login"))
