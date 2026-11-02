@@ -1,6 +1,9 @@
 """Создание и запуск Flask приложения кадрового навигатора."""
 import os
 import secrets
+import socket
+import threading
+import webbrowser
 from pathlib import Path
 from flask import Flask, session, request, abort
 from dotenv import load_dotenv
@@ -18,7 +21,7 @@ def create_app(config: dict | None = None) -> Flask:
         SQLALCHEMY_DATABASE_URI="sqlite:///" + (APP_ROOT / "data/navigator.db").as_posix(),
         SQLALCHEMY_TRACK_MODIFICATIONS=False, MAX_CONTENT_LENGTH=1024 * 1024,
         SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax",
-        DATASET_DIR=str(APP_ROOT / "data"))
+        DATASET_DIR=str(APP_ROOT / "data"), AUTO_LOGIN=os.getenv("AUTO_LOGIN", "0") == "1")
     if config:
         app.config.update(config)
     db.init_app(app)
@@ -52,10 +55,22 @@ def template_context() -> dict:
     return {"viewer": user if user and user.active else None, "csrf_token": session["csrf"]}
 
 
+def port_is_busy(host: str, port: int) -> bool:
+    """Проверить, отвечает ли на этом адресе уже запущенный сервер."""
+    with socket.socket() as probe:
+        probe.settimeout(1)
+        return probe.connect_ex((host, port)) == 0
+
 def main() -> None:
-    """Запустить локальный HTTP сервер с настройками из .env."""
+    """Запустить локальный HTTP сервер с настройками из .env и открыть сайт в браузере."""
     app = create_app()
-    app.run(host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "5000")), debug=False)
+    host, port = os.getenv("HOST", "127.0.0.1"), int(os.getenv("PORT", "5000"))
+    local = "127.0.0.1" if host == "0.0.0.0" else host
+    if port_is_busy(local, port):
+        print(f"Сервер уже запущен на http://{local}:{port}. Закройте старое чёрное окно и запустите run.bat снова.")
+        return
+    threading.Timer(1.0, webbrowser.open, [f"http://{local}:{port}"]).start()
+    app.run(host=host, port=port, debug=False)
 
 if __name__ == "__main__":
     main()

@@ -104,6 +104,16 @@ class Navigator:
         self.status.setText(message)
         QMessageBox.warning(self.window if self.window.isVisible() else None, "Ошибка запроса", message)
 
+    def auto_login(self) -> bool:
+        """Войти без окна, если сервер запущен и разрешает автовход."""
+        try:
+            result = self.client.auto_login()
+        except RuntimeError:
+            return False
+        self.window.findChild(QPushButton, "adminButton").setVisible(result.get("is_admin", False))
+        self.status.setText("Пользователь: " + result["username"])
+        return True
+
     def authenticate(self) -> bool:
         """Показать окно входа, сохраняя пароль только до отправки."""
         dialog = load_ui("login.ui")
@@ -287,7 +297,7 @@ def main() -> None:
     app.setApplicationName("Экономико-кадровый навигатор")
     app.setStyleSheet((ROOT / "resources/style.qss").read_text(encoding="utf-8"))
     navigator = Navigator()
-    if navigator.authenticate():
+    if navigator.auto_login() or navigator.authenticate():
         navigator.open()
         app.exec()
         navigator.wait_jobs()

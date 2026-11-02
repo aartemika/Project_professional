@@ -1,7 +1,0 @@
-numpy
-pandas
-matplotlib
-pillow
-pyqt6
-auto-py-to-exe
-

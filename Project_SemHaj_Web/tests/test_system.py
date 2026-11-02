@@ -1,6 +1,7 @@
 """Проверки метрик, доступа, транзакций и экспортов."""
 from pathlib import Path
 from collections.abc import Iterator
+import json
 import re
 import pandas as pd
 import pytest
@@ -21,7 +22,7 @@ def app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Flask]:
         {"vacancy_id": 3, "name": "Разработчик", "area_name": "Казань", "category": "IT", "salary_from_rub": 200, "responses_count": None},
         {"vacancy_id": 4, "name": "Врач", "area_name": "Казань", "category": "Медицина", "salary_from_rub": None, "responses_count": 2}])
     data.to_csv(tmp_path / "test.csv", index=False)
-    application = create_app({"TESTING": True, "SECRET_KEY": "test-key", "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "DATASET_DIR": str(tmp_path)})
+    application = create_app({"TESTING": True, "SECRET_KEY": "test-key", "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:", "DATASET_DIR": str(tmp_path), "AUTO_LOGIN": False})
     with application.app_context():
         import_dataset(tmp_path / "test.csv")
         db.session.add(User(username="reader", password_hash=generate_password_hash("reader-password"), active=True))
@@ -81,6 +82,75 @@ def test_web_and_exports(app: Flask) -> None:
     assert client.get("/vacancies?page=bad").status_code == 400
     assert client.get("/missing").status_code == 404
     assert client.get("/api/missing").is_json
+
+def test_main_opens_browser_once(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture) -> None:
+    """Проверить открытие браузера и отказ запускать второй сервер."""
+    import main as entry
+    opened, started = [], []
+    class Timer:
+        """Сразу выполнить отложенное действие."""
+        def __init__(self, delay: float, action: object, args: list) -> None:
+            self.action, self.args = action, args
+        def start(self) -> None:
+            self.action(*self.args)
+    class App:
+        """Заменить настоящий сервер."""
+        def run(self, **options: object) -> None:
+            started.append(options)
+    monkeypatch.setenv("HOST", "127.0.0.1")
+    monkeypatch.setenv("PORT", "5999")
+    monkeypatch.setattr(entry, "create_app", App)
+    monkeypatch.setattr(entry.threading, "Timer", Timer)
+    monkeypatch.setattr(entry.webbrowser, "open", opened.append)
+    monkeypatch.setattr(entry, "port_is_busy", lambda host, port: False)
+    entry.main()
+    assert opened == ["http://127.0.0.1:5999"] and started[0]["port"] == 5999
+    monkeypatch.setattr(entry, "port_is_busy", lambda host, port: True)
+    entry.main()
+    assert len(opened) == 1 and len(started) == 1 and "уже запущен" in capsys.readouterr().out
+
+def test_city_map(app: Flask) -> None:
+    """Проверить данные карты и локальные файлы, не требующие интернета."""
+    client = app.test_client()
+    browser_login(client)
+    def points(query: str) -> dict:
+        """Получить точки карты со страницы аналитики."""
+        page = client.get("/?" + query).text
+        return {p["city"]: p for p in json.loads(re.search(r'id="map-data" type="application/json">(.*?)</script>', page, re.S).group(1))}
+    selected = points("category=IT&city=Казань")
+    assert selected["Москва"]["count"] == 2 and selected["Москва"]["indicator"] == 100
+    assert selected["Казань"]["count"] == 1 and selected["Казань"]["indicator"] == 50
+    assert points("category=Медицина")["Москва"]["count"] == 0
+    for path in ["vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/city_map.js", "data/russia.geojson"]:
+        assert client.get("/static/" + path).status_code == 200, path
+    page = client.get("/").text
+    assert "http://" not in re.sub(r"<a [^>]*>", "", page) and "https://" not in page
+
+def test_auto_login(app: Flask) -> None:
+    """Проверить автовход, выключатель, выход и запрет для чужих адресов."""
+    assert app.test_client().post("/api/auto-login").status_code == 403
+    app.config["AUTO_LOGIN"] = True
+    client = app.test_client()
+    assert client.get("/").status_code == 302
+    welcome = client.get("/login")
+    assert 'action="/enter"' in welcome.text and 'name="password"' not in welcome.text
+    csrf = re.search(r'name="csrf_token" value="([^"]+)"', welcome.text).group(1)
+    assert client.post("/enter").status_code == 400
+    assert client.post("/enter", data={"csrf_token": csrf}).status_code == 302
+    assert client.get("/").status_code == 200
+    assert client.get("/admin/").status_code == 200
+    assert client.post("/logout", data={"csrf_token": csrf}).status_code == 302
+    assert client.get("/").status_code == 302
+    assert 'name="password"' in client.get("/login").text
+    browser_login(client, "reader", "reader-password")
+    assert client.get("/admin/").status_code == 403
+    token = app.test_client().post("/api/auto-login").json
+    assert token["is_admin"] and token["username"] == "admin"
+    assert app.test_client().get("/api/references", headers={"Authorization": "Bearer " + token["token"]}).status_code == 200
+    outside = {"REMOTE_ADDR": "10.0.0.5"}
+    assert 'name="password"' in app.test_client().get("/login", environ_base=outside).text
+    assert app.test_client().get("/", environ_base=outside).status_code == 302
+    assert app.test_client().post("/api/auto-login", environ_base=outside).status_code == 403
 
 def test_reader_forbidden(app: Flask) -> None:
     """Запретить аналитику административные действия."""

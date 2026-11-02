@@ -32,6 +32,12 @@ class ApiClient:
         self.token = result["token"]
         return result
 
+    def auto_login(self) -> dict:
+        """Получить токен без пароля, если сервер разрешает автовход."""
+        result = self.request("POST", "/api/auto-login")
+        self.token = result["token"]
+        return result
+
     def references(self) -> dict:
         """Получить справочники для фильтров."""
         return self.request("GET", "/api/references")

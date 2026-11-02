@@ -6,8 +6,9 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from werkzeug.security import check_password_hash
 from ..database.models import db, User
 from ..services import summary, references, recommendation
+from .auth_api import auto_login_user
 
-bp = Blueprint("api", __name__, url_prefix="/api")
+bp =Blueprint("api", __name__, url_prefix="/api")
 
 def token_required(view: Callable) -> Callable:
     """Проверить подписанный токен с часовым сроком действия."""
@@ -37,6 +38,18 @@ def login() -> Any:
     user = db.session.scalar(db.select(User).where(User.username == data["username"]))
     if not user or not user.active or not check_password_hash(user.password_hash, data["password"]):
         abort(401)
+    return token_response(user)
+
+@bp.post("/auto-login")
+def auto_login() -> Any:
+    """Выдать токен без пароля, если автовход включён на сервере."""
+    user = auto_login_user()
+    if not user:
+        abort(403)
+    return token_response(user)
+
+def token_response(user: User) -> Any:
+    """Сформировать ответ с токеном пользователя."""
     token = URLSafeTimedSerializer(current_app.secret_key, salt="desktop").dumps(user.id)
     return jsonify(token=token, expires_in=3600, username=user.username, is_admin=user.is_admin)
 

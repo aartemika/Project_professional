@@ -5,7 +5,7 @@ from typing import Any
 from flask import Blueprint, render_template, request, send_file, abort
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
-from ..charts import make_chart
+from ..charts import make_chart, COORDINATES
 from .auth_api import login_required
 from ..services import summary, references, recommendation, frame
 from ..database.models import db, ImportLog
@@ -24,18 +24,28 @@ def selection() -> tuple[str, list[str]]:
         abort(400, description="Неизвестный город")
     return category, cities
 
+def map_points(rows: list[dict], cities: list[str]) -> list[dict]:
+    """Подготовить для карты все города с координатами, включая города без вакансий."""
+    known = {r["city"]: r for r in rows}
+    return [{"city": city, "lon": COORDINATES[city][0], "lat": COORDINATES[city][1],
+             "count": known[city]["count"] if city in known else 0,
+             "indicator": known[city]["indicator"] if city in known else 0}
+            for city in cities if city in COORDINATES]
+
 @bp.get("/")
 @login_required
 def index() -> str:
     """Показать метрики выбранного среза и фильтры сравнения."""
     category, cities = selection()
-    rows = summary(category, cities)
+    all_rows = summary(category)
+    rows = [r for r in all_rows if not cities or r["city"] in cities]
     cluster = request.args.get("cluster", "")
     if cluster:
         rows = [r for r in rows if r["cluster"] == cluster]
     compare_error = "Для сравнения выберите от двух до трёх городов." if request.args.get("compare") and not 2 <= len(cities) <= 3 else ""
-    return render_template("index.html", rows=rows, refs=references(), category=category, cities=cities,
-        recommendation=recommendation(rows), cluster=cluster, compare_error=compare_error,
+    refs = references()
+    return render_template("index.html", rows=rows, refs=refs, category=category, cities=cities,
+        points=map_points(all_rows, refs["cities"]), recommendation=recommendation(rows), cluster=cluster, compare_error=compare_error,
         source=db.session.scalar(db.select(ImportLog).order_by(ImportLog.id.desc()).limit(1)))
 
 @bp.get("/chart.png")
