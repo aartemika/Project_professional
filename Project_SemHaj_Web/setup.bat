@@ -1,5 +1,5 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-python -m venv .venv
-".venv\Scripts\python.exe" -m pip install -r requirements.txt
+call prepare_env.bat
 pause
