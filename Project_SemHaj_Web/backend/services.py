@@ -98,6 +98,36 @@ def recommendation(rows: list[dict]) -> str:
         text += f"Наименьшая медиана предлагаемой зарплаты: {low['city']} ({low['salary']:,.0f} руб./месяц). "
     return text + "Для выбора площадки дополнительно нужны данные о резюме, стоимости жизни и инфраструктуре."
 
+def competition(category: str = "") -> dict:
+    """Индекс конкуренции соискателей: медиана откликов в день на вакансию, 100 = как по всем городам."""
+    data = frame(category)
+    data = data[data.responses.notna()].copy()
+    if data.empty:
+        return {"rows": [], "overall": None}
+    published = pd.to_datetime(data.publication_time, format="ISO8601", utc=True).dt.tz_convert(None).dt.normalize()
+    age = (pd.to_datetime(data.snapshot_date) - published).dt.days.clip(lower=1)
+    data["rate"] = data.responses / age
+    overall = float(data.rate.median()) or float(data.rate.mean()) or 1.0
+    rows = []
+    for city, group in data.groupby("city", sort=True):
+        salary = group.salary.dropna()
+        index = round(100 * float(group.rate.median()) / overall, 1)
+        rows.append({"city": city, "count": len(group), "rate": round(float(group.rate.median()), 2),
+            "responses": round(float(group.responses.median()), 1), "no_response": round(float((group.responses == 0).mean()) * 100, 1),
+            "salary": round(float(salary.median())) if len(salary) else None, "index": index,
+            "level": "высокая" if index >= 120 else "низкая" if index <= 80 else "средняя"})
+    rows.sort(key=lambda r: r["index"], reverse=True)
+    return {"rows": rows, "overall": round(overall, 2)}
+
+def competition_text(result: dict) -> str:
+    """Описать крайние значения индекса конкуренции словами."""
+    rows = result["rows"]
+    if len(rows) < 2:
+        return "Для сравнения нужно хотя бы два города с данными об откликах."
+    top, low = rows[0], rows[-1]
+    return (f"Больше всего соискателей на вакансию в городе {top['city']} (индекс {top['index']}), меньше всего — в городе {low['city']} "
+            f"(индекс {low['index']}). Соискателю там, где индекс ниже, устроиться проще; работодателю там, где индекс выше, проще найти сотрудников.")
+
 def city_totals() -> dict[str, int]:
     """Посчитать все вакансии каждого города независимо от фильтров."""
     query = db.select(City.name, db.func.count(Vacancy.id)).join(Vacancy, Vacancy.city_id == City.id).group_by(City.name)

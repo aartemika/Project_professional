@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block title %}Индекс конкуренции · Кадровый навигатор{% endblock %}{% block content %}
+<p class="eyebrow">КОНКУРЕНЦИЯ СОИСКАТЕЛЕЙ</p><h1>Индекс конкуренции по городам</h1>
+<p class="lead">Сколько людей откликается на одну вакансию. 100 — средний уровень по всем городам, выше — конкуренция сильнее.</p>
+<form class="filter-panel" method="get"><div><label for="category">Профессиональная область</label><select id="category" class="form-control" name="category"><option value="">Все области</option>{% for c in refs.categories %}<option {% if category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+<div><button class="btn btn-primary">Применить</button> <a href="{{ url_for('pages.competition_page') }}">Сбросить</a></div></form>
+{% if rows %}<p class="recommendation">{{ text }}</p>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Город</th><th>Индекс конкуренции</th><th>Уровень</th><th>Откликов в день на вакансию</th><th>Вакансии без откликов</th><th>Медиана зарплаты</th><th>Вакансий</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.city }}</td><td><b>{{ r.index }}</b><div class="comp-bar"><i style="width:{{ [r.index / 3, 100]|min }}%"></i></div></td><td>{{ r.level }}</td><td>{{ r.rate }}</td><td>{{ r.no_response }}%</td><td>{{ '{:,.0f}'.format(r.salary).replace(',', ' ') if r.salary is not none else 'Нет данных' }}</td><td>{{ r.count }}</td></tr>{% endfor %}
+</tbody></table></div>
+<section class="help"><h2>Как читать</h2>
+<p><b>Соискатель:</b> низкий индекс означает, что на вакансию откликается меньше людей, и шанс выше. <b>Работодатель:</b> высокий индекс означает, что кандидатов много и найм проще. <b>Государство:</b> сильные различия между городами показывают, где рынок труда перегрет или, наоборот, свободен.</p>
+<p><b>Расчёт.</b> Для каждой вакансии число откликов делится на число дней с публикации до даты снимка, чтобы старые вакансии не выглядели популярнее. Затем берётся медиана по городу, и индекс равен 100 × медиана города / медиана по всем вакансиям выбранной области ({{ overall }} откликов в день). Медиана выбрана потому, что несколько очень популярных вакансий сильно искажают среднее.</p>
+<p class="text-muted">Ограничения: отклики показывают активность людей на hh.ru, а не весь рынок; в данных только вакансии с указанной зарплатой; снимки сделаны в июле 2026 года, динамики нет.</p></section>
+{% else %}<div class="alert alert-info">Нет данных об откликах. Администратору нужно импортировать CSV либо измените фильтр.</div>{% endif %}{% endblock %}

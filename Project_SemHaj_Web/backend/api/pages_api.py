@@ -7,7 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from ..charts import make_chart, COORDINATES
 from .auth_api import login_required
-from ..services import summary, references, recommendation, frame, map_metrics
+from ..services import summary, references, recommendation, frame, map_metrics, competition, competition_text
 from ..database.models import db, ImportLog
 
 bp = Blueprint("pages", __name__)
@@ -46,6 +46,15 @@ def index() -> str:
     return render_template("index.html", rows=rows, refs=refs, category=category, cities=cities,
         points=map_points(all_rows, refs["cities"], category), recommendation=recommendation(rows), cluster=cluster, compare_error=compare_error,
         source=db.session.scalar(db.select(ImportLog).order_by(ImportLog.id.desc()).limit(1)))
+
+@bp.get("/competition")
+@login_required
+def competition_page() -> str:
+    """Показать индекс конкуренции соискателей по городам."""
+    category, _ = selection()
+    result = competition(category)
+    return render_template("competition.html", rows=result["rows"], overall=result["overall"], category=category,
+        refs=references(), text=competition_text(result))
 
 @bp.get("/chart.png")
 @login_required

@@ -5,7 +5,7 @@
 {% block styles %}{% endblock %}<link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"></head>
 <body><header><nav class="navbar navbar-dark bg-dark"><div class="container">
 <a class="navbar-brand" href="{{ url_for('pages.index') }}">Кадровый навигатор</a>
-<div class="navlinks"><a href="{{ url_for('pages.index') }}">Аналитика</a><a href="{{ url_for('pages.vacancies') }}">Вакансии</a>
+<div class="navlinks"><a href="{{ url_for('pages.index') }}">Аналитика</a><a href="{{ url_for('pages.competition_page') }}">Конкуренция</a><a href="{{ url_for('pages.vacancies') }}">Вакансии</a>
 <a href="{{ url_for('pages.help_page') }}">Справка</a><a href="{{ url_for('pages.contacts') }}">Контакты</a>
 {% if viewer %}{% if viewer.is_admin %}<a href="{{ url_for('admin.index') }}">Админка</a>{% endif %}
 <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-light">Выйти · {{ viewer.username }}</button></form>
