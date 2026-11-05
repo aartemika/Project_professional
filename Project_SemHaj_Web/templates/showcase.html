@@ -1,0 +1,33 @@
+{% extends 'base.html' %}{% block title %}Экономико-кадровый индикатор{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static',filename='vendor/leaflet/leaflet.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/showcase.css') }}">{% endblock %}
+{% block content %}
+<section class="sc-hero">
+<h1>Экономико-кадровый индикатор</h1>
+<div class="sc-hero-actions"><a class="sc-btn" href="{{ url_for('showcase.navigator_page') }}">Подобрать город</a><a class="sc-btn sc-btn-ghost" href="#map">Смотреть карту</a></div>
+</section>
+
+{% if leaders %}<section class="sc-leaders">{% for l in leaders %}<article class="sc-leader"><span>{{ l.title }}</span><b>{{ l.city }}</b><small>{{ l.value }}</small></article>{% endfor %}</section>{% endif %}
+
+<section class="sc-section" id="map">
+<div class="sc-head"><div><h2 class="sc-display">Карта рынка труда</h2>
+<p>{% if category %}Цвет показывает, где профессию «{{ category }}» ищут чаще, чем в других городах.{% else %}Нажмите на город, чтобы узнать о нём главное. Выберите профессию, и карта покажет, где её ищут чаще.{% endif %}</p></div>
+<form method="get" class="sc-select"><label for="category">Профессия</label><select id="category" name="category" onchange="this.form.submit()"><option value="">Все профессии</option>{% for c in refs.categories %}<option {% if category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></form></div>
+<div class="sc-mapwrap"><div id="city-map" data-mode="{{ 'specialization' if category else 'share' }}" data-outline="{{ url_for('static',filename='data/russia.geojson') }}"></div><aside id="city-panel" class="sc-panel"></aside></div>
+<script id="map-data" type="application/json">{{ points|tojson }}</script>
+</section>
+
+<section class="sc-section">
+<h2 class="sc-display">Чем славится каждый город</h2>
+<p class="sc-sub">Какие профессии занимают в городе большую долю вакансий, чем в среднем по всем городам.</p>
+<div class="sc-cities">{% for c in specialties %}<article class="sc-city"><h3>{{ c.city }}</h3>
+<ul>{% for i in c['items'] %}<li><span>{{ i.category }}</span><div class="sc-share here"><span>В этом городе</span><i style="width:100%"></i><b>{{ i.share }}</b></div><div class="sc-share"><span>В среднем</span><i style="width:{{ i.average_width }}%"></i><b>{{ i.average }}</b></div></li>{% endfor %}</ul></article>{% endfor %}</div>
+</section>
+
+<section class="sc-section">
+<div class="sc-cta">
+<a href="{{ url_for('showcase.navigator_page', category=category) }}" class="sc-cta-main"><b>Подобрать город под себя</b><span>Укажите зарплату и опыт, настройте, что для вас важнее, и сравните города.</span></a>
+<a href="{{ url_for('pages.index', category=category) }}"><b>Подробная аналитика</b><span>Таблицы, графики и PDF-отчёт.</span></a>
+</div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static',filename='vendor/leaflet/leaflet.js') }}"></script><script src="{{ url_for('static',filename='js/home_map.js') }}"></script>{% endblock %}

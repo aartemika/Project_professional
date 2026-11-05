@@ -31,7 +31,7 @@ def map_points(rows: list[dict], cities: list[str], category: str) -> list[dict]
     return [{"city": city, "lon": COORDINATES[city][0], "lat": COORDINATES[city][1], **metrics.get(city, empty)}
             for city in cities if city in COORDINATES]
 
-@bp.get("/")
+@bp.get("/analytics")
 @login_required
 def index() -> str:
     """Показать метрики выбранного среза и фильтры сравнения."""
@@ -86,7 +86,7 @@ def report() -> Any:
     stream = BytesIO()
     with plot_lock, PdfPages(stream) as pdf:
         title = Figure(figsize=(8.27, 11.69))
-        title.text(.1, .9, "Экономико-кадровый навигатор", fontsize=17)
+        title.text(.1, .9, "Экономико-кадровый индикатор", fontsize=17)
         import textwrap
         text = "Область: " + (category or "Все области") + "\n\n" + recommendation(rows)
         text += "\n\nИндекс = 100 × число вакансий города / максимум по городам выбранной области."

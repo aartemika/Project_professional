@@ -47,7 +47,7 @@ def login() -> Any:
     """Показать приветствие или форму входа и открыть браузерную сессию."""
     current_user()
     if request.method == "GET" and auto_login_user() and not session.get("manual_login"):
-        return redirect(url_for("pages.index")) if current_user() else render_template("welcome.html")
+        return redirect(url_for("showcase.panorama")) if current_user() else render_template("welcome.html")
     error = ""
     if request.method == "POST":
         user = db.session.scalar(db.select(User).where(User.username == request.form.get("username", "")))
@@ -55,7 +55,7 @@ def login() -> Any:
             session.clear()
             session["boot"] = current_app.config["BOOT_ID"]
             session["user_id"] = user.id
-            return redirect(url_for("pages.index"))
+            return redirect(url_for("showcase.panorama"))
         error = "Неверный логин или пароль"
     return render_template("login.html", error=error)
 
@@ -66,7 +66,7 @@ def enter() -> Any:
     if not user or session.get("manual_login"):
         return redirect(url_for("auth.login"))
     session["user_id"] = user.id
-    return redirect(url_for("pages.index"))
+    return redirect(url_for("showcase.panorama"))
 
 @bp.post("/logout")
 def logout() -> Any:

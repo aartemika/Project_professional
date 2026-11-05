@@ -1,0 +1,9 @@
+﻿python.exe : <frozen importlib._bootstrap>:491: RuntimeWarning: The global interpreter lock (GIL) has been enabled to l
+oad module 'fontTools.misc.bezierTools', which has not declared that it can run safely without the GIL. To override thi
+s behavior and keep the GIL disabled (at your own risk), run with PYTHON_GIL=0 or -Xgil=0.
+At line:5 char:1
++ & ".venv\Scripts\python.exe" -c "
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (<frozen importl...L=0 or -Xgil=0.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

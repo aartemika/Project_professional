@@ -1,0 +1,170 @@
+:root{--ink:#14303f;--muted:#5d7180;--line:#d3dee3;--card:#fff;--deep:#0b2433;--teal:#176b83;--mint:#2a9d8f;--display:"Segoe UI Variable Display","Segoe UI",Arial,sans-serif}
+
+/* Крупные заголовки */
+.sc-display{font-family:var(--display);font-size:2.5rem;font-weight:700;letter-spacing:-.02em;line-height:1.12;margin:0 0 10px;background:linear-gradient(95deg,#0b2f4a 0%,#176b83 55%,#1f9a8f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:4px}
+.sc-display-lg{font-size:3.4rem;margin:18px 0 26px}
+
+/* Плашка главной */
+.sc-hero{margin:-8px 0 24px;padding:64px 44px 54px;border-radius:26px;color:#fff;background:radial-gradient(circle at 12% 18%,rgba(120,225,210,.28),transparent 38%),radial-gradient(circle at 88% 85%,rgba(139,211,168,.4),transparent 42%),linear-gradient(120deg,#0b2f4a 0%,#12627c 38%,#1f9a8f 72%,#7fcf9f 100%);box-shadow:0 18px 40px rgba(13,36,51,.24)}
+.sc-hero h1{font-family:var(--display);font-size:3rem;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0 0 28px;color:#fff}
+.sc-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.sc-btn{display:inline-block;padding:13px 30px;border-radius:999px;background:#fff;color:#12475a;font-weight:700;text-decoration:none;box-shadow:0 8px 20px rgba(0,0,0,.2);transition:transform .15s}
+.sc-btn:hover{transform:translateY(-2px);color:#12475a;text-decoration:none}
+.sc-btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55);box-shadow:none}
+.sc-btn-ghost:hover{color:#fff;background:rgba(255,255,255,.12)}
+
+/* Факты над картой */
+.sc-leaders{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:44px}
+.sc-leader{background:var(--card);border-radius:18px;padding:18px 22px;box-shadow:0 6px 18px rgba(20,48,63,.07)}
+.sc-leader span{display:block;font-size:.84rem;font-weight:600;color:var(--muted)}
+.sc-leader b{display:block;font-family:var(--display);font-size:1.55rem;font-weight:700;margin:4px 0 2px;color:var(--ink)}
+.sc-leader small{font-size:.92rem;color:var(--teal);font-weight:600}
+
+/* Секции */
+.sc-section{margin-bottom:48px}
+.sc-sub{color:var(--muted);max-width:780px;margin-bottom:20px;font-size:1.02rem}
+.sc-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:18px}
+.sc-head p{color:var(--muted);max-width:680px;margin:0;font-size:1.02rem}
+.sc-select label{display:block;font-size:.84rem;font-weight:700;color:var(--teal);margin-bottom:4px}
+.sc-select select{min-width:290px;padding:11px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-weight:600}
+
+/* Карта */
+.sc-mapwrap{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:stretch}
+.sc-mapwrap #city-map{height:650px}
+.sc-mapwrap #city-map path:focus{outline:none}
+.sc-panel{background:#fff;border:1px solid #dce4eb;border-radius:16px;padding:22px;box-shadow:0 6px 18px rgba(32,51,68,.07);overflow:auto;max-height:650px}
+.sc-panel h3{font-family:var(--display);font-size:1.75rem;font-weight:700;margin:0;color:var(--ink)}
+.sc-badge{display:inline-block;margin-top:8px;padding:3px 11px;border-radius:999px;background:#e3f4f1;color:#14665c;font-size:.8rem;font-weight:700}
+.sc-panel-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.sc-panel-stats div{background:#f1f6f7;border-radius:12px;padding:10px 12px}
+.sc-panel-stats span{display:block;font-size:.76rem;color:var(--muted)}
+.sc-panel-stats b{font-size:1.02rem;color:var(--ink)}
+.sc-panel h4{font-size:.86rem;font-weight:700;color:var(--teal);margin:14px 0 6px}
+.sc-facts{list-style:none;padding:0;margin:0}
+.sc-facts li{padding:7px 0;border-top:1px solid #edf2f4;font-size:.92rem;line-height:1.35}
+.sc-facts small{display:block;margin-top:1px;color:var(--muted)}
+.sc-panel-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.sc-btn-small{display:block;text-align:center;padding:11px 16px;border-radius:999px;background:var(--teal);color:#fff;font-weight:700;text-decoration:none}
+.sc-btn-small:hover{background:#125a6f;color:#fff;text-decoration:none}
+.sc-btn-small-ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
+.sc-btn-small-ghost:hover{background:#e8f3f6;color:var(--teal)}
+
+/* Чем славится город */
+.sc-cities{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.sc-city{background:#fff;border-radius:18px;padding:20px 22px;box-shadow:0 6px 18px rgba(20,48,63,.07)}
+.sc-city h3{font-family:var(--display);font-size:1.3rem;font-weight:700;margin:0 0 12px;color:var(--ink)}
+.sc-city ul{list-style:none;padding:0;margin:0}
+.sc-city li{padding:9px 0;border-top:1px solid #edf2f4;font-size:.93rem;line-height:1.3}
+.sc-city li span{display:block}
+.sc-share{display:grid;grid-template-columns:82px 1fr 44px;align-items:center;gap:8px;margin-top:5px;font-size:.8rem;color:var(--muted)}
+.sc-share i{display:block;height:7px;border-radius:4px;background:#cdd9de}
+.sc-share b{text-align:right;color:var(--muted);font-weight:600}
+.sc-share.here{color:var(--ink);font-weight:600}
+.sc-share.here i{background:linear-gradient(90deg,#2a9d8f,#176b83)}
+.sc-share.here b{color:var(--teal);font-weight:700}
+.sc-explain{display:flex;gap:12px;align-items:flex-start;background:#d6e6e8;border-radius:14px;padding:12px 16px;margin-bottom:18px;max-width:880px;font-size:.95rem;color:#23424f}
+
+/* Кнопки внизу */
+.sc-cta{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
+.sc-cta a{display:block;background:#fff;border-radius:18px;padding:24px;color:var(--ink);text-decoration:none;box-shadow:0 6px 18px rgba(20,48,63,.07);transition:transform .15s,box-shadow .15s}
+.sc-cta a:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(20,48,63,.14);text-decoration:none}
+.sc-cta b{display:block;font-size:1.2rem;margin-bottom:6px}
+.sc-cta span{color:var(--muted)}
+.sc-cta .sc-cta-main{background:linear-gradient(120deg,#0b2f4a,#12627c 60%,#1f9a8f)}
+.sc-cta .sc-cta-main b,.sc-cta .sc-cta-main span{color:#fff}
+
+/* Подбор города: режимы */
+.nv-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
+.nv-modes button{padding:16px;border:0;border-radius:16px;background:#fff;font-weight:700;font-size:1.05rem;color:var(--ink);cursor:pointer;box-shadow:0 4px 12px rgba(20,48,63,.06);transition:transform .15s,box-shadow .15s}
+.nv-modes button:hover{transform:translateY(-2px)}
+.nv-modes button small{display:block;font-weight:400;font-size:.86rem;color:var(--muted);margin-top:2px}
+.nv-modes button.active{background:linear-gradient(120deg,#0b2f4a,#12627c 65%,#1f9a8f);color:#fff;box-shadow:0 10px 24px rgba(18,98,124,.32)}
+.nv-modes button.active small{color:#d6e6ec}
+
+/* Подбор города: панели */
+.nv-panel{background:#fff;border-radius:18px;padding:22px 24px;margin-bottom:16px;box-shadow:0 6px 18px rgba(20,48,63,.07)}
+.nv-panel h2{font-family:var(--display);font-size:1.35rem;font-weight:700;margin:0 0 4px;color:var(--ink)}
+.nv-panel>p{color:var(--muted);margin:0 0 16px}
+.nv-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-top:14px}
+.nv-field label{font-size:.86rem;font-weight:700;color:var(--teal);margin:0 0 5px}
+.nv-field input,.nv-field select{width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:#f7fafb;color:var(--ink);font-weight:600;font-size:1rem}
+.nv-field input:focus,.nv-field select:focus{outline:2px solid #7fcfc0;background:#fff}
+.nv-field small{margin-top:5px;font-size:.82rem}
+.nv-weights{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px}
+.nv-weight label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.98rem;margin:0}
+.nv-weight label b{flex:none;padding:1px 9px;border-radius:999px;background:#e3f4f1;color:#14665c;font-size:.82rem}
+.nv-weight input{width:100%;margin:10px 0 2px;accent-color:var(--teal)}
+.nv-weight small{font-size:.84rem}
+.nv-scale{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted)}
+
+/* Подбор города: вывод */
+.nv-verdict{display:grid;grid-template-columns:auto 1fr 1fr;gap:26px;align-items:center;padding:26px 30px;margin-bottom:22px;border-radius:24px;color:#fff;background:radial-gradient(circle at 92% 12%,rgba(139,211,168,.32),transparent 40%),linear-gradient(120deg,#0b2f4a 0%,#12627c 62%,#1f9a8f 100%);box-shadow:0 18px 38px rgba(13,36,51,.22)}
+.nv-verdict-main{display:flex;align-items:center;gap:20px}
+.nv-ring{flex:none;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#ffd166 calc(var(--p)*1%),rgba(255,255,255,.18) 0)}
+.nv-ring div{width:76px;height:76px;border-radius:50%;background:#0f4a60;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.nv-ring b{font-family:var(--display);font-size:1.6rem}
+.nv-ring span{font-size:.68rem;color:#c8dde3;margin-top:2px}
+.nv-verdict-city span{display:block;font-size:.86rem;color:#c8e4e4}
+.nv-verdict-city b{display:block;font-family:var(--display);font-size:2.1rem;font-weight:700;line-height:1.1;white-space:nowrap}
+.nv-verdict-city small{color:#c8dde3;margin-top:4px;font-size:.84rem}
+.nv-verdict h4{font-size:.86rem;font-weight:700;color:#a8e6d7;margin:0 0 6px}
+.nv-verdict ul{margin:0;padding-left:18px;font-size:.93rem;line-height:1.4}
+.nv-verdict li{margin-bottom:4px}
+.nv-verdict-note{grid-column:1/-1;font-size:.9rem;color:#d6e6ec;margin:0}
+.nv-verdict-plain{background:#fff;color:var(--ink);box-shadow:none;display:block}
+
+/* Подбор города: рейтинг */
+.nv-rank-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.nv-rank-head h2{font-family:var(--display);font-size:1.5rem;font-weight:700;margin:0;color:var(--ink)}
+.nv-rank-head button{border:0;cursor:pointer;min-width:280px}
+.nv-rank-head button:disabled{background:#c0ccd2;cursor:not-allowed}
+.nv-hint{color:var(--muted);font-size:.92rem;margin:6px 0}
+.nv-legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 12px;font-size:.85rem;color:var(--muted)}
+.nv-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.rank{list-style:none;padding:0;margin:0}
+.rank li{background:#fff;border-radius:16px;padding:14px 20px;margin-bottom:10px;box-shadow:0 4px 12px rgba(20,48,63,.05)}
+.rank li.top{box-shadow:0 0 0 2px #2a9d8f,0 8px 20px rgba(23,107,131,.16)}
+.rank-head{display:flex;align-items:center;gap:12px}
+.rank-head input{width:18px;height:18px;accent-color:var(--teal)}
+.rank .place{width:28px;height:28px;border-radius:50%;background:#e3ebf1;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+.rank li.top .place{background:var(--teal);color:#fff}
+.rank .score{margin-left:auto;font-weight:700}
+.nv-stack{display:flex;height:10px;border-radius:5px;background:#e6edf0;overflow:hidden;margin:9px 0 8px}
+.nv-stack i{display:block;height:100%}
+.nv-how{background:#fff;border-radius:14px;padding:14px 18px;margin:6px 0 22px}
+.nv-how summary{cursor:pointer;font-weight:700;color:var(--teal)}
+.nv-how p{margin:10px 0 0;line-height:1.6}
+#compare-box h2{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--ink);margin:0 0 12px}
+
+/* Подбор города: анализ рынка */
+.nv-views{display:inline-flex;gap:4px;padding:4px;background:#cfdde1;border-radius:999px;margin-bottom:16px}
+.nv-views button{border:0;background:transparent;padding:9px 22px;border-radius:999px;font-weight:700;color:var(--ink);cursor:pointer}
+.nv-views button.active{background:var(--teal);color:#fff}
+.nv-insights{list-style:none;padding:0;margin:0 0 16px}
+.nv-insights li{background:#fff;border-left:4px solid var(--mint);padding:12px 16px;margin-bottom:8px}
+.nv-table{background:#fff;border-radius:14px;overflow:hidden}
+.nv-table td{vertical-align:middle}
+.nv-table .comp-bar{min-width:120px}
+.nv-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+
+/* Карточки городов и сравнение */
+.nv-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:6px}
+.nv-card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 6px 18px rgba(20,48,63,.07)}
+.nv-card h3{font-family:var(--display);font-size:1.5rem;font-weight:700;margin:0 0 14px;color:#12475a}
+.nv-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.nv-stat{background:#f1f6f7;border-radius:12px;padding:12px}
+.nv-stat span{display:block;font-size:.76rem;font-weight:600;color:var(--muted)}
+.nv-stat b{display:block;font-size:1.1rem;margin-top:2px}
+.nv-stat.win{background:#e3f4f1;box-shadow:inset 0 0 0 2px #5ab4ac}
+.nv-card h4{font-size:.86rem;font-weight:700;color:var(--teal);margin:14px 0 6px}
+.nv-card ul{list-style:none;padding:0;margin:0}
+.nv-card li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #edf2f4;font-size:.92rem}
+.nv-card li b{color:var(--teal);white-space:nowrap;text-align:right}
+.nv-card li small{font-weight:400;color:var(--muted)}
+.nv-compare-note{background:#fff;border-left:4px solid var(--mint);padding:14px 18px;margin-bottom:12px}
+.nv-compare-note b{display:block;font-size:1.1rem;color:#12475a}
+.nv-low{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:#fff3d6;color:#8a5a00;font-size:.72rem;font-weight:700}
+.nv-low-note{background:#fff3d6;border-radius:10px;padding:8px 12px;color:#8a5a00;font-size:.88rem;margin:0 0 10px}
+
+@media(max-width:1000px){.sc-mapwrap{grid-template-columns:1fr}.sc-panel{max-height:none}.nv-verdict{grid-template-columns:1fr}}
+@media(max-width:800px){.nv-modes,.sc-cta{grid-template-columns:1fr}.sc-hero{padding:38px 24px 32px}.sc-hero h1{font-size:2rem}.sc-display{font-size:1.9rem}.sc-display-lg{font-size:2.2rem}.sc-mapwrap #city-map{height:430px}.sc-select select{min-width:0;width:100%}.nv-verdict-city b{white-space:normal}}

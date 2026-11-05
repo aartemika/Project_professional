@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% block title %}Подбор города · Экономико-кадровый индикатор{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static',filename='css/showcase.css') }}">{% endblock %}
+{% block content %}
+<h1 class="sc-display sc-display-lg">Какой город подходит именно вам?</h1>
+<div class="nv-modes" id="modes">
+<button type="button" data-mode="seeker">Для соискателя<small>Где искать работу</small></button>
+<button type="button" data-mode="business">Для бизнеса<small>Где открыть дело и нанимать</small></button>
+<button type="button" data-mode="overview">Анализ рынка<small>Что представляет собой город</small></button></div>
+
+<section class="nv-panel"><h2 id="inputs-title"></h2>
+<div class="nv-fields">
+<div class="nv-field"><label for="category">Профессия</label><select id="category"><option value="">Все профессии</option>{% for c in refs.categories %}<option {% if category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+<div class="nv-field" data-rank-only><label for="salary" id="salary-label"></label><input id="salary" type="number" min="0" step="5000" inputmode="numeric"><small id="salary-hint"></small></div>
+<div class="nv-field" data-rank-only><label for="range" id="range-label"></label><select id="range">{% for r in [5000, 10000, 20000, 30000, 50000] %}<option value="{{ r }}">± {{ '{:,}'.format(r).replace(',', ' ') }} ₽</option>{% endfor %}</select><small id="range-hint"></small></div>
+<div class="nv-field" data-rank-only><label for="experience" id="experience-label"></label><select id="experience"><option value="">Любой</option>{% for e in experience_options %}<option {% if experience==e %}selected{% endif %}>{{ e }}</option>{% endfor %}</select></div>
+</div></section>
+
+<section id="overview-box" hidden>
+<div class="nv-views" id="views"><button type="button" data-view="city">По городу</button><button type="button" data-view="profession">По профессии</button></div>
+<section id="prof-box" hidden>
+<div class="nv-panel"><h2 id="prof-title"></h2><p id="prof-note"></p></div>
+<ul class="nv-insights" id="prof-insights"></ul>
+<div class="table-responsive"><table class="table nv-table" id="prof-table"></table></div></section>
+<section id="city-box">
+<div class="nv-panel"><h2>Выберите город</h2><p>Посмотрите, что здесь ищут чаще и где лучше платят. Выберите второй город, чтобы сравнить.</p>
+<div class="nv-pick"><div class="nv-field"><label for="city-a">Город</label><select id="city-a"></select></div><div class="nv-field"><label for="city-b">Сравнить с</label><select id="city-b"></select></div></div></div>
+<div class="nv-cards" id="overview-cards"></div></section></section>
+
+<section id="rank-box" hidden>
+<div class="nv-panel"><h2>Насколько это важно</h2><p>Оцените от 0 до 10. Зарплата уже учтена выше: она всегда считается самым важным.</p><div class="nv-weights" id="weights-grid"></div></div>
+<div id="verdict"></div>
+<div class="nv-rank-head"><h2 id="rank-title"></h2><button type="button" class="sc-btn-small" id="compare-btn" disabled></button></div>
+<p class="nv-hint">Отметьте два-три города галочками и нажмите «Сравнить». Цветная полоска показывает, из чего сложилась оценка.</p>
+<div id="ranking"></div>
+<details class="nv-how"><summary>Как считается оценка</summary><p id="how-text"></p></details>
+<div id="compare-box" hidden><h2>Сравнение</h2><div id="compare-verdict"></div><div class="nv-cards" id="compare-cards"></div></div></section>
+
+<script id="rating-data" type="application/json">{{ data|tojson }}</script>
+<script id="profiles-data" type="application/json">{{ profiles|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static',filename='js/navigator.js') }}"></script>{% endblock %}

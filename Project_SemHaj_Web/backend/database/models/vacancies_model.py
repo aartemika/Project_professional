@@ -18,3 +18,4 @@ class Vacancy(db.Model):
     on_site: Mapped[bool]
     publication_time: Mapped[str]
     snapshot_date: Mapped[str]
+    experience: Mapped[str] = mapped_column(default="", server_default="")

@@ -6,10 +6,11 @@ import re
 import pandas as pd
 import pytest
 from flask import Flask
+from sqlalchemy import text
 from werkzeug.security import generate_password_hash
 from main import create_app
 from backend.database.models import db, User, Vacancy
-from backend.services import import_dataset, summary
+from backend.services import import_dataset, summary, upgrade_vacancy_table
 from backend.dataset import load_dataset
 from backend.charts import make_chart
 
@@ -83,6 +84,30 @@ def test_web_and_exports(app: Flask) -> None:
     assert client.get("/vacancies?page=bad").status_code == 400
     assert client.get("/missing").status_code == 404
     assert client.get("/api/missing").is_json
+
+def test_navigator_data(app: Flask) -> None:
+    """Проверить данные подбора города: зарплаты, опыт и проверку параметров."""
+    client = app.test_client()
+    assert client.get("/navigator/data").status_code == 302
+    browser_login(client)
+    assert client.get("/navigator").status_code == 200
+    rows = client.get("/navigator/data?category=IT").json
+    moscow = next(r for r in rows if r["city"] == "Москва")
+    assert moscow["count"] == 2 and moscow["salary"] == 275
+    assert len(moscow["distribution"]) == 101 and moscow["distribution"][0] == 150 and moscow["distribution"][-1] == 400
+    assert moscow["coefficient"] == 1.33
+    assert client.get("/navigator/data?experience=Без опыта").json == []
+    assert client.get("/navigator/data?experience=bad").status_code == 400
+    assert client.get("/navigator/data?category=bad").status_code == 400
+
+def test_upgrade_old_database(app: Flask, tmp_path: Path) -> None:
+    """Проверить, что в старую базу без столбца опыта он добавляется и заполняется из файла импорта."""
+    with app.app_context():
+        pd.read_csv(tmp_path / "test.csv").assign(experience="Без опыта").to_csv(tmp_path / "test.csv", index=False)
+        db.session.execute(text("ALTER TABLE vacancy DROP COLUMN experience"))
+        db.session.commit()
+        upgrade_vacancy_table(tmp_path)
+        assert db.session.scalar(db.select(db.func.count(Vacancy.id)).where(Vacancy.experience == "Без опыта")) == 4
 
 def test_chart_styling() -> None:
     """Проверить порядок городов, выделение лидера, среднее и запись значений."""

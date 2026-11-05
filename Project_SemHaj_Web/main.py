@@ -9,6 +9,7 @@ from flask import Flask, session, request, abort
 from dotenv import load_dotenv
 from backend.database.models import db, User
 from backend.database.default_data import create_admin
+from backend.services import upgrade_vacancy_table
 
 APP_ROOT = Path(__file__).resolve().parent
 
@@ -31,14 +32,16 @@ def create_app(config: dict | None = None) -> Flask:
     from backend.api.analytics_api import bp as api
     from backend.api.admin_api import bp as admin
     from backend.api.crud_api import bp as crud
+    from backend.api.showcase_api import bp as showcase
     from backend.errors import register_errors
-    for blueprint in [auth, pages, api, admin, crud]:
+    for blueprint in [auth, pages, api, admin, crud, showcase]:
         app.register_blueprint(blueprint)
     register_errors(app)
     app.before_request(protect_forms)
     app.context_processor(template_context)
     with app.app_context():
         db.create_all()
+        upgrade_vacancy_table(Path(app.config["DATASET_DIR"]))
         create_admin()
     return app
 

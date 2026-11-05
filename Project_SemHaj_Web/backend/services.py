@@ -2,9 +2,24 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sqlalchemy import delete
+from sqlalchemy import delete, inspect, text
 from .dataset import load_dataset
 from .database.models import db, City, Category, WorkFormat, Vacancy, ImportLog
+
+def upgrade_vacancy_table(dataset_dir: Path) -> None:
+    """Добавить в старую базу столбец опыта и заполнить его из файла последнего импорта."""
+    if "experience" in {column["name"] for column in inspect(db.engine).get_columns("vacancy")}:
+        return
+    db.session.execute(text("ALTER TABLE vacancy ADD COLUMN experience VARCHAR NOT NULL DEFAULT ''"))
+    db.session.commit()
+    source = db.session.scalar(db.select(ImportLog).order_by(ImportLog.id.desc()).limit(1))
+    path = dataset_dir / source.filename if source else None
+    if not path or not path.is_file() or "experience" not in pd.read_csv(path, nrows=0).columns:
+        return
+    data = pd.read_csv(path, usecols=["vacancy_id", "experience"], low_memory=False).dropna()
+    data["vacancy_id"] = data["vacancy_id"].astype(str).str.replace(r"\.0$", "", regex=True)
+    db.session.execute(text("UPDATE vacancy SET experience = :experience WHERE id = :vacancy_id"), data.to_dict("records"))
+    db.session.commit()
 
 def import_dataset(path: Path) -> dict:
     """Атомарно заменить вакансии и справочники проверенным CSV."""
@@ -29,7 +44,8 @@ def import_dataset(path: Path) -> dict:
                 "salary": None if pd.isna(r["salary"]) else float(r["salary"]),
                 "responses": None if pd.isna(r["responses_count"]) else float(r["responses_count"]),
                 "remote": r["is_remote"], "hybrid": r["is_hybrid"], "on_site": r["is_on_site"],
-                "publication_time": r["publication_time"], "snapshot_date": r["snapshot_date"]})
+                "publication_time": r["publication_time"], "snapshot_date": r["snapshot_date"],
+                "experience": r["experience"]})
         db.session.execute(db.insert(Vacancy), records)
         db.session.add(ImportLog(filename=path.name, rows=len(records)))
         db.session.commit()
@@ -42,7 +58,7 @@ def frame(category: str = "", cities: list[str] | None = None) -> pd.DataFrame:
     """Получить вакансии по выбранной категории и городам."""
     query = db.select(Vacancy.id, Vacancy.name, City.name.label("city"), Category.name.label("category"),
         Vacancy.salary, Vacancy.responses, Vacancy.remote, Vacancy.hybrid, Vacancy.on_site,
-        Vacancy.company, Vacancy.publication_time, Vacancy.snapshot_date).join(City, Vacancy.city_id == City.id).join(Category, Vacancy.category_id == Category.id)
+        Vacancy.company, Vacancy.publication_time, Vacancy.snapshot_date, Vacancy.experience).join(City, Vacancy.city_id == City.id).join(Category, Vacancy.category_id == Category.id)
     if category:
         query = query.where(Category.name == category)
     if cities:
@@ -99,20 +115,24 @@ def recommendation(rows: list[dict]) -> str:
     return text + "Для выбора площадки дополнительно нужны данные о резюме, стоимости жизни и инфраструктуре."
 
 def competition(category: str = "") -> dict:
-    """Индекс конкуренции соискателей: медиана откликов в день на вакансию, 100 = как по всем городам."""
-    data = frame(category)
+    """Индекс конкуренции соискателей: среднее число откликов в день на вакансию (редкие сверхпопулярные вакансии ограничены 99-м процентилем), 100 = как по всем городам."""
+    return competition_rows(frame(category))
+
+def competition_rows(data: pd.DataFrame) -> dict:
+    """Рассчитать индекс конкуренции по готовому набору вакансий."""
     data = data[data.responses.notna()].copy()
     if data.empty:
         return {"rows": [], "overall": None}
     published = pd.to_datetime(data.publication_time, format="ISO8601", utc=True).dt.tz_convert(None).dt.normalize()
-    age = (pd.to_datetime(data.snapshot_date) - published).dt.days.clip(lower=1)
-    data["rate"] = data.responses / age
-    overall = float(data.rate.median()) or float(data.rate.mean()) or 1.0
+    age = (pd.to_datetime(data.snapshot_date, errors="coerce") - published).dt.days.clip(lower=1).fillna(1)
+    rate = data.responses / age
+    data["rate"] = rate.clip(upper=rate.quantile(0.99))
+    overall = float(data.rate.mean()) or 1.0
     rows = []
     for city, group in data.groupby("city", sort=True):
         salary = group.salary.dropna()
-        index = round(100 * float(group.rate.median()) / overall, 1)
-        rows.append({"city": city, "count": len(group), "rate": round(float(group.rate.median()), 2),
+        index = round(100 * float(group.rate.mean()) / overall, 1)
+        rows.append({"city": city, "count": len(group), "rate": round(float(group.rate.mean()), 2),
             "responses": round(float(group.responses.median()), 1), "no_response": round(float((group.responses == 0).mean()) * 100, 1),
             "salary": round(float(salary.median())) if len(salary) else None, "index": index,
             "level": "высокая" if index >= 120 else "низкая" if index <= 80 else "средняя"})
@@ -126,7 +146,7 @@ def competition_text(result: dict) -> str:
         return "Для сравнения нужно хотя бы два города с данными об откликах."
     top, low = rows[0], rows[-1]
     return (f"Больше всего соискателей на вакансию в городе {top['city']} (индекс {top['index']}), меньше всего — в городе {low['city']} "
-            f"(индекс {low['index']}). Соискателю там, где индекс ниже, устроиться проще; работодателю там, где индекс выше, проще найти сотрудников.")
+            f"(индекс {low['index']}). Где индекс ниже, на вакансию откликается меньше людей, где выше — больше. Это не гарантия того, что конкретному человеку будет проще или сложнее найти работу.")
 
 def city_totals() -> dict[str, int]:
     """Посчитать все вакансии каждого города независимо от фильтров."""

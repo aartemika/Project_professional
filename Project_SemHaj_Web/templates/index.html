@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block content %}
-<p class="eyebrow">РЫНОК ТРУДА В ЦИФРАХ</p><h1>Экономико-кадровый профиль городов</h1>
+<h1>Экономико-кадровый профиль городов</h1>
 <p class="lead">Сравните опубликованный спрос, предлагаемые зарплаты и форматы работы.</p>
 {% if source %}<p class="text-muted">Источник: {{ source.filename }} · {{ source.rows }} вакансий · импорт {{ source.created_at.strftime('%d.%m.%Y %H:%M') }} UTC</p>{% endif %}
 <form class="filter-panel" method="get"><div><label for="category">Профессиональная область</label><select id="category" class="form-control" name="category"><option value="">Все области</option>{% for c in refs.categories %}<option {% if category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>

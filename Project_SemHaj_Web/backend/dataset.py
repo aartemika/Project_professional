@@ -25,7 +25,7 @@ def load_dataset(path: Path) -> tuple[pd.DataFrame, dict]:
     data.loc[~monthly | (data["salary"] <= 0), "salary"] = np.nan
     for col in ["is_remote", "is_hybrid", "is_on_site", "is_field_work"]:
         data[col] = data.get(col, pd.Series(False, index=data.index)).astype(str).str.lower().isin(["true", "1", "1.0"])
-    for col in ["company", "work_formats", "publication_time", "snapshot_date"]:
+    for col in ["company", "work_formats", "publication_time", "snapshot_date", "experience"]:
         data[col] = data.get(col, pd.Series("", index=data.index)).fillna("").astype(str)
     for col in ["name", "area_name", "category"]:
         data[col] = data[col].astype(str).str.strip()
