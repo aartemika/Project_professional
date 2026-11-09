@@ -95,7 +95,9 @@
 .nv-weight label b{flex:none;padding:1px 9px;border-radius:999px;background:#e3f4f1;color:#14665c;font-size:.82rem}
 .nv-weight input{width:100%;margin:10px 0 2px;accent-color:var(--teal)}
 .nv-weight small{font-size:.84rem}
-.nv-scale{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted)}
+.nv-scale{display:flex;justify-content:space-between;font-size:.74rem;font-weight:500;line-height:1.5;color:#526b7d}
+.nv-scale span:first-child{color:#a65e3f}
+.nv-scale span:last-child{color:#147d76}
 
 /* Подбор города: вывод */
 .nv-verdict{display:grid;grid-template-columns:auto 1fr 1fr;gap:26px;align-items:center;padding:26px 30px;margin-bottom:22px;border-radius:24px;color:#fff;background:radial-gradient(circle at 92% 12%,rgba(139,211,168,.32),transparent 40%),linear-gradient(120deg,#0b2f4a 0%,#12627c 62%,#1f9a8f 100%);box-shadow:0 18px 38px rgba(13,36,51,.22)}

@@ -77,6 +77,10 @@ def make_chart(rows: list[dict], kind: str = "vacancies") -> Figure:
             valid = sorted(valid, key=lambda r: r[field], reverse=True)[:20]
             title += " — первые 20 городов по значению"
         if valid:
+            # Для короткого списка сохраняем плотность строк, а не высоту
+            # полного графика: два города больше не растягиваются на весь блок.
+            if len(valid) < 9:
+                figure.set_size_inches(10, max(1.9, 1.1 + .48 * len(valid)))
             draw_bars(ax, valid, field, kind, title)
         else:
             ax.set_title(title)

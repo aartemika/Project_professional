@@ -271,7 +271,7 @@
 
     function renderWeights() {
         const text = TEXT[state.mode], weights = state.weights[state.mode], box = $("weights-grid");
-        box.innerHTML = Object.keys(weights).map((k) => "<div class=\"nv-weight\"><label for=\"w-" + k + "\">" + text.labels[k] + " <b id=\"v-" + k + "\">" + weights[k] + " из 10</b></label><input id=\"w-" + k + "\" type=\"range\" min=\"0\" max=\"10\" step=\"1\" value=\"" + weights[k] + "\" data-k=\"" + k + "\"><div class=\"nv-scale\"><span>не важно</span><span>очень важно</span></div><small>" + text.hints[k] + "</small></div>").join("");
+        box.innerHTML = Object.keys(weights).map((k) => "<div class=\"nv-weight\"><label for=\"w-" + k + "\">" + text.labels[k] + " <b id=\"v-" + k + "\">" + weights[k] + " из 10</b></label><input id=\"w-" + k + "\" type=\"range\" min=\"0\" max=\"10\" step=\"1\" value=\"" + weights[k] + "\" data-k=\"" + k + "\"><div class=\"nv-scale\"><span>Неважно</span><span>Очень важно</span></div><small>" + text.hints[k] + "</small></div>").join("");
         box.querySelectorAll("input").forEach((input) => input.addEventListener("input", () => {
             weights[input.dataset.k] = Number(input.value);
             $("v-" + input.dataset.k).textContent = input.value + " из 10";
