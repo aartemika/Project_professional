@@ -2,6 +2,8 @@
 
 import json
 import os
+import socket
+import ssl
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
@@ -16,6 +18,18 @@ KEY_FILE = Path(__file__).resolve().parents[2] / "private" / "superjob.key"
 API_URL = "https://api.superjob.ru/2.0/vacancies/"
 PAGE_SIZE = 20
 MAX_RESULTS = 500
+
+
+def connection_error_message(error: Exception) -> str:
+    """Показать понятную причину сбоя связи, не раскрывая ключ API."""
+    reason = error.reason if isinstance(error, URLError) else error
+    if isinstance(reason, socket.gaierror):
+        return "Не удаётся найти адрес API SuperJob. Проверьте интернет и DNS на компьютере, где запущен сайт."
+    if isinstance(reason, TimeoutError):
+        return "SuperJob слишком долго не отвечает. Повторите поиск позже."
+    if isinstance(reason, ssl.SSLError):
+        return "Не удалось установить защищённое соединение с SuperJob. Проверьте дату и время на компьютере."
+    return "Не удалось соединиться с SuperJob. Проверьте интернет на компьютере, где запущен сайт, и повторите поиск."
 
 
 def secret_key() -> str:
@@ -102,8 +116,10 @@ def search_page() -> str:
             rows, total, has_more = search_vacancies(keyword, town, 0)
         except HTTPError as exc:
             error = "SuperJob отклонил запрос. Проверьте ключ или повторите поиск позже." if exc.code in {401, 403} else "SuperJob временно не отвечает. Повторите поиск позже."
-        except (URLError, TimeoutError, ValueError, OSError):
-            error = "Не удалось получить вакансии SuperJob. Проверьте интернет и повторите поиск."
+        except (URLError, TimeoutError, OSError) as exc:
+            error = connection_error_message(exc)
+        except ValueError:
+            error = "SuperJob прислал неожиданный ответ. Повторите поиск позже."
 
     next_count = min(PAGE_SIZE, max(0, min(total or 0, MAX_RESULTS) - len(rows)))
     return render_template("superjob.html", keyword=keyword, town=town,
@@ -127,7 +143,12 @@ def more_vacancies():
         return jsonify(error="Ключ SuperJob не настроен."), 503
     try:
         rows, total, has_more = search_vacancies(keyword, town, page)
-    except (HTTPError, URLError, TimeoutError, ValueError, OSError):
-        return jsonify(error="Не удалось загрузить вакансии. Попробуйте ещё раз."), 502
+    except HTTPError as exc:
+        message = "SuperJob отклонил запрос. Проверьте ключ." if exc.code in {401, 403} else "SuperJob временно не отвечает. Повторите поиск позже."
+        return jsonify(error=message), 502
+    except (URLError, TimeoutError, OSError) as exc:
+        return jsonify(error=connection_error_message(exc)), 502
+    except ValueError:
+        return jsonify(error="SuperJob прислал неожиданный ответ. Повторите поиск позже."), 502
     return jsonify(html=render_template("superjob_cards.html", rows=rows),
                    added=len(rows), total=total, has_more=has_more, next_page=page + 1)
