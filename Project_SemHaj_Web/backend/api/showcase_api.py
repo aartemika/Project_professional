@@ -1,7 +1,7 @@
 """Главная страница с картой и раздел «Подбор города»."""
 from typing import Any
 from flask import Blueprint, render_template, request, jsonify, abort
-from .auth_api import login_required
+from .auth_api import browsing_allowed
 from .pages_api import selection, map_points
 from ..services import references
 from ..showcase import showcase_data, rating_data, city_profiles, city_notes, cached_summary, money, plural, EXPERIENCE
@@ -17,7 +17,7 @@ def chosen_experience() -> str:
 
 @bp.get("/")
 @bp.get("/panorama")
-@login_required
+@browsing_allowed
 def panorama() -> str:
     """Показать главную страницу: карту с карточками городов и яркие факты."""
     category, _ = selection()
@@ -34,7 +34,7 @@ def panorama() -> str:
     return render_template("showcase.html", category=category, refs=refs, points=points, **showcase_data(category))
 
 @bp.get("/navigator")
-@login_required
+@browsing_allowed
 def navigator_page() -> str:
     """Показать подбор города: режимы соискателя и бизнеса, анализ рынка и сравнение."""
     category, _ = selection()
@@ -43,7 +43,7 @@ def navigator_page() -> str:
         category=category, experience=experience, experience_options=EXPERIENCE, refs=references())
 
 @bp.get("/navigator/data")
-@login_required
+@browsing_allowed
 def navigator_data() -> Any:
     """Вернуть показатели городов при смене профессии или опыта."""
     category, _ = selection()

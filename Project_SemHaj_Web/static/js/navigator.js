@@ -141,6 +141,16 @@
         return { pro, con };
     }
 
+    function vacancyLink(city, featured = false) {
+        const category = $("category").value;
+        const params = new URLSearchParams({ search: "1", town: city });
+        if (category) params.set("keyword", category);
+        const label = featured ? "Посмотреть актуальные вакансии" : "Вакансии SuperJob";
+        return '<a class="nv-live-link" href="/superjob?' + escapeHtml(params.toString()) +
+            '" aria-label="' + escapeHtml(label + ' — ' + city) + '">' +
+            label + ' <span aria-hidden="true">→</span></a>';
+    }
+
     function renderVerdict(rows) {
         const box = $("verdict");
         const weights = state.weights[state.mode];
@@ -161,9 +171,13 @@
             const gap = top.score - second.score;
             note = "<p class=\"nv-verdict-note\">Следом идёт " + escapeHtml(second.d.city) + " (" + Math.round(second.score) + " из 100)" + (gap < 5 ? ": города очень близки, сравните их подробнее." : ".") + "</p>";
         }
+        const vacancies = state.mode === "seeker"
+            ? '<div class="nv-live-cta"><p><strong>Что есть на рынке сейчас</strong><small>Актуальные предложения SuperJob · ' +
+                escapeHtml(top.d.city) + '</small></p>' + vacancyLink(top.d.city, true) + '</div>'
+            : "";
         box.innerHTML = "<div class=\"nv-verdict\"><div class=\"nv-verdict-main\"><div class=\"nv-ring\" style=\"--p:" + score + "\"><div><b>" + score + "</b><span>из 100</span></div></div>" +
             "<div class=\"nv-verdict-city\"><span>Лучше всего подходит</span><b>" + escapeHtml(top.d.city) + "</b></div></div>" +
-            list("Почему", why.pro) + list("Что учесть", why.con) + note + "</div>";
+            list("Почему", why.pro) + list("Что учесть", why.con) + note + vacancies + "</div>";
     }
 
     function legend() {
@@ -188,14 +202,18 @@
             updateCompareButton();
             return;
         }
-        let html = legend() + "<ol class=\"rank\">";
+        const showVacancies = state.mode === "seeker";
+        const source = showVacancies ? '<p class="nv-hint nv-live-source">Рейтинг рассчитан по выборке hh.ru</p>' : "";
+        let html = source + legend() + "<ol class=\"rank\">";
         rows.forEach((x, i) => {
             const d = x.d;
             const stack = Object.keys(x.parts).filter((k) => x.parts[k].points > 0).sort().map((k) => "<i style=\"width:" + x.parts[k].points + "%;background:" + COLORS[k] + "\"></i>").join("");
             const low = reliable(d) ? "" : "<small class=\"nv-low\">мало данных</small>";
             const salary = d.salary ? "обычно " + money(d.salary) : "зарплата неизвестна";
             html += "<li class=\"" + (i === 0 && reliable(d) ? "top" : "") + "\"><div class=\"rank-head\"><input type=\"checkbox\" aria-label=\"Сравнить\" data-city=\"" + escapeHtml(d.city) + "\"" + (state.checked[d.city] ? " checked" : "") + "><span class=\"place\">" + (i + 1) + "</span><b>" + escapeHtml(d.city) + "</b>" + low + "<span class=\"score\">" + Math.round(x.score) + " из 100</span></div>" +
-                "<div class=\"nv-stack\">" + stack + "</div><small>" + fitLine(x) + salary + " · " + plural(d.count, "вакансия", "вакансии", "вакансий") + " · ≈ " + plural(d.week || 0, "отклик", "отклика", "откликов") + " в неделю на вакансию · удалённо " + String(d.remote).replace(".", ",") + "%</small></li>";
+                "<div class=\"nv-stack\">" + stack + "</div><small>" + fitLine(x) + salary + " · " + plural(d.count, "вакансия", "вакансии", "вакансий") + " · ≈ " + plural(d.week || 0, "отклик", "отклика", "откликов") + " в неделю на вакансию · удалённо " + String(d.remote).replace(".", ",") + "%</small>";
+            if (showVacancies) html += '<div class="nv-live-row">' + vacancyLink(d.city) + '</div>';
+            html += "</li>";
         });
         $("ranking").innerHTML = html + "</ol>";
         $("ranking").querySelectorAll("input[type=checkbox]").forEach((box) => box.addEventListener("change", () => {

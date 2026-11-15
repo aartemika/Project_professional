@@ -77,6 +77,15 @@
 .nv-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
 .nv-modes button{padding:16px;border:0;border-radius:16px;background:#fff;font-weight:700;font-size:1.05rem;color:var(--ink);cursor:pointer;box-shadow:0 4px 12px rgba(20,48,63,.06);transition:transform .15s,box-shadow .15s}
 .nv-modes button:hover{transform:translateY(-2px)}
+.nv-modes button:focus:not(:focus-visible),
+.nv-views button:focus:not(:focus-visible) {
+    outline: none;
+}
+.nv-modes button:focus-visible,
+.nv-views button:focus-visible {
+    outline: 2px solid #2a827c;
+    outline-offset: 3px;
+}
 .nv-modes button small{display:block;font-weight:400;font-size:.86rem;color:var(--muted);margin-top:2px}
 .nv-modes button.active{background:linear-gradient(120deg,#0b2f4a,#12627c 65%,#1f9a8f);color:#fff;box-shadow:0 10px 24px rgba(18,98,124,.32)}
 .nv-modes button.active small{color:#d6e6ec}
@@ -170,3 +179,44 @@
 
 @media(max-width:1000px){.sc-mapwrap{grid-template-columns:1fr}.sc-panel{max-height:none}.nv-verdict{grid-template-columns:1fr}}
 @media(max-width:800px){.nv-modes,.sc-cta{grid-template-columns:1fr}.sc-hero{padding:38px 24px 32px}.sc-hero h1{font-size:2rem}.sc-display{font-size:1.9rem}.sc-display-lg{font-size:2.2rem}.sc-mapwrap #city-map{height:430px}.sc-select select{min-width:0;width:100%}.nv-verdict-city b{white-space:normal}}
+
+/* Переход от подбора города к вакансиям SuperJob */
+.nv-live-cta {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    padding: 16px 18px;
+    border: 1px solid #8dcbb477;
+    border-radius: 14px;
+    background: #072e4359;
+}
+.nv-live-cta p { margin: 0; }
+.nv-live-cta p strong { display: block; color: #fff; }
+.nv-live-cta p small { margin-top: 3px; color: #d4e9e9; }
+.nv-live-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    max-width: 100%;
+    padding: 8px 12px;
+    border-radius: 9px;
+    background: #e3f4f1;
+    color: #135e55;
+    font-size: .88rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+.nv-live-link:hover { background: #ccece4; color: #104e47; text-decoration: none; }
+.nv-live-link:focus-visible { outline: 2px solid #2a827c; outline-offset: 3px; }
+.nv-live-cta .nv-live-link {
+    padding: 10px 14px;
+    background: #bce9dd;
+    color: #104e47;
+}
+.nv-live-cta .nv-live-link:hover { background: #def6ef; }
+.nv-live-cta .nv-live-link:focus-visible { outline-color: #bce9dd; }
+.nv-live-row { margin-top: 11px; }
+.nv-live-source { margin: 0 0 8px; }

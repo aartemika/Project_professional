@@ -4,6 +4,7 @@ import json
 import os
 import socket
 import ssl
+import sys
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
@@ -11,7 +12,7 @@ from urllib.request import Request, urlopen
 
 from flask import Blueprint, jsonify, render_template, request
 
-from .auth_api import login_required
+from .auth_api import browsing_allowed
 
 bp = Blueprint("superjob", __name__)
 KEY_FILE = Path(__file__).resolve().parents[2] / "private" / "superjob.key"
@@ -27,8 +28,10 @@ def connection_error_message(error: Exception) -> str:
         return "Не удаётся найти адрес API SuperJob. Проверьте интернет и DNS на компьютере, где запущен сайт."
     if isinstance(reason, TimeoutError):
         return "SuperJob слишком долго не отвечает. Повторите поиск позже."
+    if isinstance(reason, ssl.SSLCertVerificationError):
+        return "Не удалось подтвердить сертификат SuperJob. Проверьте, открывается ли api.superjob.ru в браузере на этом компьютере."
     if isinstance(reason, ssl.SSLError):
-        return "Не удалось установить защищённое соединение с SuperJob. Проверьте дату и время на компьютере."
+        return "Не удалось установить защищённое соединение с SuperJob. Повторите поиск позже."
     return "Не удалось соединиться с SuperJob. Проверьте интернет на компьютере, где запущен сайт, и повторите поиск."
 
 
@@ -69,14 +72,25 @@ def salary_label(item: dict) -> str:
     return "Не указана"
 
 
+def superjob_tls_context() -> ssl.SSLContext:
+    """Проверять сертификат средствами Windows при локальном запуске."""
+    if sys.platform == "win32":
+        import truststore
+
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    return ssl.create_default_context()
+
+
 def search_vacancies(keyword: str, town: str, page: int) -> tuple[list[dict], int, bool]:
-    params = {"keyword": keyword, "count": PAGE_SIZE, "page": page}
+    params = {"count": PAGE_SIZE, "page": page}
+    if keyword:
+        params["keyword"] = keyword
     if town:
         params["town"] = town
     api_request = Request(API_URL + "?" + urlencode(params), headers={
         "X-Api-App-Id": secret_key(), "Accept": "application/json"
     })
-    with urlopen(api_request, timeout=12) as response:
+    with urlopen(api_request, timeout=12, context=superjob_tls_context()) as response:
         payload = json.load(response)
     if not isinstance(payload, dict) or payload.get("error"):
         raise ValueError("Unexpected SuperJob response")
@@ -96,7 +110,7 @@ def search_vacancies(keyword: str, town: str, page: int) -> tuple[list[dict], in
 
 
 @bp.get("/superjob")
-@login_required
+@browsing_allowed
 def search_page() -> str:
     keyword = request.args.get("keyword", "").strip()[:100]
     town = request.args.get("town", "").strip()[:80]
@@ -109,8 +123,8 @@ def search_page() -> str:
 
     if submitted and not configured:
         error = "Ключ SuperJob ещё не добавлен. Откройте private/superjob.key и вставьте туда Secret key."
-    elif submitted and not keyword:
-        error = "Укажите профессию или название вакансии."
+    elif submitted and not (keyword or town):
+        error = "Укажите профессию, название вакансии или город."
     elif submitted:
         try:
             rows, total, has_more = search_vacancies(keyword, town, 0)
@@ -129,7 +143,7 @@ def search_page() -> str:
 
 
 @bp.get("/superjob/more")
-@login_required
+@browsing_allowed
 def more_vacancies():
     keyword = request.args.get("keyword", "").strip()[:100]
     town = request.args.get("town", "").strip()[:80]
@@ -137,7 +151,7 @@ def more_vacancies():
         page = int(request.args.get("page", "1"))
     except ValueError:
         page = -1
-    if not keyword or not 1 <= page < MAX_RESULTS // PAGE_SIZE:
+    if not (keyword or town) or not 1 <= page < MAX_RESULTS // PAGE_SIZE:
         return jsonify(error="Неверный запрос."), 400
     if not secret_key():
         return jsonify(error="Ключ SuperJob не настроен."), 503

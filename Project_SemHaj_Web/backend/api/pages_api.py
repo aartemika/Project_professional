@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, send_file, abort
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from ..charts import make_chart, COORDINATES
-from .auth_api import login_required
+from .auth_api import browsing_allowed
 from ..services import summary, references, recommendation, frame, map_metrics, competition, competition_text
 from ..database.models import db, ImportLog
 
@@ -32,7 +32,7 @@ def map_points(rows: list[dict], cities: list[str], category: str) -> list[dict]
             for city in cities if city in COORDINATES]
 
 @bp.get("/analytics")
-@login_required
+@browsing_allowed
 def index() -> str:
     """Показать метрики выбранного среза и фильтры сравнения."""
     category, cities = selection()
@@ -48,7 +48,7 @@ def index() -> str:
         source=db.session.scalar(db.select(ImportLog).order_by(ImportLog.id.desc()).limit(1)))
 
 @bp.get("/competition")
-@login_required
+@browsing_allowed
 def competition_page() -> str:
     """Показать индекс конкуренции соискателей по городам."""
     category, _ = selection()
@@ -57,7 +57,7 @@ def competition_page() -> str:
         refs=references(), text=competition_text(result))
 
 @bp.get("/chart.png")
-@login_required
+@browsing_allowed
 def chart() -> Any:
     """Сформировать PNG средствами matplotlib без внешних ресурсов."""
     category, cities = selection()
@@ -76,7 +76,7 @@ def chart() -> Any:
     return send_file(stream, mimetype="image/png")
 
 @bp.get("/report.pdf")
-@login_required
+@browsing_allowed
 def report() -> Any:
     """Экспортировать графики и текстовую рекомендацию в PDF."""
     category, cities = selection()
@@ -106,7 +106,7 @@ def report() -> Any:
     return send_file(stream, mimetype="application/pdf", as_attachment=True, download_name="navigator_report.pdf")
 
 @bp.get("/vacancies")
-@login_required
+@browsing_allowed
 def vacancies() -> str:
     """Показать постраничный список вакансий выбранного среза."""
     category, cities = selection()

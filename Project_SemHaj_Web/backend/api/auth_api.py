@@ -21,6 +21,11 @@ def auto_login_user() -> User | None:
         return None
     return db.session.scalar(db.select(User).where(User.is_admin, User.active).order_by(User.id).limit(1))
 
+def local_browsing_allowed() -> bool:
+    """Открыть обычные страницы без входа при просмотре с этого компьютера."""
+    return request.remote_addr in {"127.0.0.1", "::1"}
+
+
 def login_required(view: Callable) -> Callable:
     """Ограничить маршрут авторизованными пользователями."""
     @wraps(view)
@@ -29,6 +34,20 @@ def login_required(view: Callable) -> Callable:
         if not current_user():
             return redirect(url_for("auth.login"))
         return view(*args, **kwargs)
+    return wrapped
+
+
+def browsing_allowed(view: Callable) -> Callable:
+    """Разрешить локальный просмотр и проверять вход для удалённых запросов."""
+    authenticated_view = login_required(view)
+
+    @wraps(view)
+    def wrapped(*args: Any, **kwargs: Any) -> Any:
+        if local_browsing_allowed():
+            current_user()
+            return view(*args, **kwargs)
+        return authenticated_view(*args, **kwargs)
+
     return wrapped
 
 def admin_required(view: Callable) -> Callable:

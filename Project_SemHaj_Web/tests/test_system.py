@@ -72,7 +72,8 @@ def test_api_access(app: Flask) -> None:
 def test_web_and_exports(app: Flask) -> None:
     """Проверить HTML страницы, PNG, PDF, CSRF и ошибки."""
     client = app.test_client()
-    assert client.get("/").status_code == 302
+    assert client.get("/").status_code == 200
+    assert client.get("/admin/").location == "/login"
     assert client.post("/logout").status_code == 400
     browser_login(client)
     for path in ["/", "/admin/", "/vacancies", "/help", "/contacts"]:
@@ -88,8 +89,7 @@ def test_web_and_exports(app: Flask) -> None:
 def test_navigator_data(app: Flask) -> None:
     """Проверить данные подбора города: зарплаты, опыт и проверку параметров."""
     client = app.test_client()
-    assert client.get("/navigator/data").status_code == 302
-    browser_login(client)
+    assert client.get("/navigator/data").status_code == 200
     assert client.get("/navigator").status_code == 200
     rows = client.get("/navigator/data?category=IT").json
     moscow = next(r for r in rows if r["city"] == "Москва")
@@ -184,7 +184,7 @@ def test_auto_login(app: Flask) -> None:
     assert app.test_client().post("/api/auto-login").status_code == 403
     app.config["AUTO_LOGIN"] = True
     client = app.test_client()
-    assert client.get("/").status_code == 302
+    assert client.get("/").status_code == 200
     welcome = client.get("/login")
     assert 'action="/enter"' in welcome.text and 'name="password"' not in welcome.text
     csrf = re.search(r'name="csrf_token" value="([^"]+)"', welcome.text).group(1)
@@ -193,7 +193,8 @@ def test_auto_login(app: Flask) -> None:
     assert client.get("/").status_code == 200
     assert client.get("/admin/").status_code == 200
     assert client.post("/logout", data={"csrf_token": csrf}).status_code == 302
-    assert client.get("/").status_code == 302
+    assert client.get("/").status_code == 200
+    assert client.get("/admin/").location == "/login"
     assert 'name="password"' in client.get("/login").text
     browser_login(client, "reader", "reader-password")
     assert client.get("/admin/").status_code == 403
