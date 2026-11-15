@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Вакансии SuperJob · Экономико-кадровый индикатор{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/superjob.css') }}">{% endblock %}
+{% block content %}
+<section class="sj-header"><span class="sj-eyebrow">ПОИСК ПО ДАННЫМ SUPERJOB</span><h1>Актуальные вакансии</h1><p>Найдите предложения по профессии и городу. Каждую вакансию можно открыть на SuperJob.</p></section>
+<form method="get" action="{{ url_for('superjob.search_page') }}" class="sj-search">
+  <input type="hidden" name="search" value="1">
+  <div><label for="sj-keyword">Профессия или вакансия</label><input id="sj-keyword" class="form-control" name="keyword" value="{{ keyword }}" maxlength="100" required placeholder="Например, сварщик"></div>
+  <div><label for="sj-town">Город</label><input id="sj-town" class="form-control" name="town" value="{{ town }}" maxlength="80" placeholder="Например, Москва"></div>
+  <button class="btn btn-primary" type="submit">Найти вакансии</button>
+</form>
+{% if error %}<div class="alert alert-warning" role="alert">{{ error }}</div>{% endif %}
+{% if submitted and not error %}
+<div class="sj-results-heading"><div><h2>Результаты поиска</h2><p id="sj-count" aria-live="polite">Найдено: {{ total }} · показано: {{ rows|length }}{% if total > 500 %} (SuperJob позволяет просмотреть не более 500){% endif %}</p></div><span class="sj-live">Данные SuperJob</span></div>
+{% if rows %}
+<div class="sj-grid" id="sj-results">{% include 'superjob_cards.html' %}</div>
+{% if has_more and next_count %}<div class="sj-more-wrap"><button class="btn btn-primary sj-more" id="sj-more" type="button" data-url="{{ url_for('superjob.more_vacancies') }}" data-keyword="{{ keyword }}" data-town="{{ town }}" data-page="1" data-shown="{{ rows|length }}" data-total="{{ total }}">Показать ещё {{ next_count }} {% if next_count % 10 == 1 and next_count % 100 != 11 %}вакансию{% elif next_count % 10 in [2, 3, 4] and next_count % 100 not in [12, 13, 14] %}вакансии{% else %}вакансий{% endif %}</button><p class="sj-more-error" id="sj-more-error" role="alert" hidden></p></div>{% endif %}
+{% else %}<div class="sj-empty">По этим условиям вакансий не найдено.{% if town %} <a href="{{ url_for('superjob.search_page',search=1,keyword=keyword) }}">Поискать «{{ keyword }}» во всех городах</a>.{% else %} Попробуйте изменить профессию.{% endif %}</div>{% endif %}
+{% endif %}
+<p class="sj-note">Поиск показывает актуальную выдачу SuperJob. Эти вакансии не входят в расчёты по учебной выборке.</p>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/superjob.js') }}" defer></script>{% endblock %}

@@ -5,8 +5,8 @@
 {% block styles %}{% endblock %}<link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"></head>
 <body><header><nav class="navbar navbar-dark bg-dark"><div class="container">
 <a class="navbar-brand brand" href="{{ url_for('showcase.panorama') }}"><img src="{{ url_for('static',filename='img/favicon.svg') }}" alt="" width="42" height="42"><span class="brand-text">Экономико-кадровый индикатор</span></a>
-<div class="navlinks"><a href="{{ url_for('showcase.panorama') }}">Главная</a><a href="{{ url_for('showcase.navigator_page') }}">Подбор города</a><a href="{{ url_for('pages.help_page') }}">Справка</a>
-<details class="nav-more"><summary>Ещё</summary><div><a href="{{ url_for('pages.index') }}">Подробная аналитика</a><a href="{{ url_for('pages.competition_page') }}">Конкуренция</a><a href="{{ url_for('pages.vacancies') }}">Вакансии</a><a href="{{ url_for('pages.contacts') }}">Контакты</a>{% if viewer and viewer.is_admin %}<a href="{{ url_for('admin.index') }}">Админка</a>{% endif %}</div></details>
+<div class="navlinks"><a href="{{ url_for('showcase.panorama') }}">Главная</a><a href="{{ url_for('showcase.navigator_page') }}">Подбор города</a><a href="{{ url_for('pages.help_page') }}">Справка</a><a href="{{ url_for('superjob.search_page') }}">Вакансии SuperJob</a>
+<details class="nav-more"><summary>Ещё</summary><div><a href="{{ url_for('pages.index') }}">Подробная аналитика</a><a href="{{ url_for('pages.competition_page') }}">Конкуренция</a><a href="{{ url_for('pages.vacancies') }}">Вакансии из выборки</a><a href="{{ url_for('pages.contacts') }}">Контакты</a>{% if viewer and viewer.is_admin %}<a href="{{ url_for('admin.index') }}">Админка</a>{% endif %}</div></details>
 {% if viewer %}
 <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-sm btn-outline-light">Выйти · {{ viewer.username }}</button></form>
 {% else %}<a href="{{ url_for('auth.login') }}">Войти</a>{% endif %}</div></div></nav></header>

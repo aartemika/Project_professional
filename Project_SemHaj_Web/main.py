@@ -33,8 +33,9 @@ def create_app(config: dict | None = None) -> Flask:
     from backend.api.admin_api import bp as admin
     from backend.api.crud_api import bp as crud
     from backend.api.showcase_api import bp as showcase
+    from backend.api.superjob_api import bp as superjob
     from backend.errors import register_errors
-    for blueprint in [auth, pages, api, admin, crud, showcase]:
+    for blueprint in [auth, pages, api, admin, crud, showcase, superjob]:
         app.register_blueprint(blueprint)
     register_errors(app)
     app.before_request(protect_forms)

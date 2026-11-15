@@ -1,0 +1,11 @@
+{% for item in rows %}
+<article class="sj-card">
+  <div class="sj-card-body">
+    <span class="sj-source">SuperJob</span>
+    <h2>{{ item.name }}</h2>
+    <p class="sj-company">{{ item.company }}</p>
+    <div class="sj-meta"><span>{{ item.city or 'Город не указан' }}</span><strong>{{ item.salary }}</strong></div>
+  </div>
+  {% if item.link %}<a class="sj-open" href="{{ item.link }}" target="_blank" rel="noopener noreferrer">Посмотреть вакансию <span aria-hidden="true">↗</span></a>{% endif %}
+</article>
+{% endfor %}
